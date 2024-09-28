@@ -1,19 +1,36 @@
 const mongodb = require("../db/connect");
 
+/* getData handles incoming HTTP requests, req: data sent 
+   by the client, res: sends data back to client, next: 
+   callback func used to give control to next middleware 
+   in the chain */
 const getData = async (req, res, next) => {
   try {
+    /* getDB is MongoDB function which retrieves the next 
+       MongoDB database instance */
     const db = mongodb.getDb();
     console.log("Connected to database: ", db.databaseName);
+    /* Query the MondoDB database instance for all 
+       documents in the user collection */
     const result = await db.collection("user").find();
+    /* MongoDB returns a cursor, which lazily loads the 
+       data, converts the result (cursor) into an array */
     const data = await result.toArray();
     console.log("Data retrieved", data);
+    // Tells client that server with respond in JSON format
     res.setHeader("Content-Type", "application/json");
+    /* Sets HTTP status (200) success, sends JSON response  
+       of first document in the array (data[0]). Can also 
+       send whole array. (data instead of data[0])*/
     res.status(200).json(data[0]); 
   } catch (err) {
+    /* Set response to HTTP 500 (Internal Server Error), 
+       along with a JSON object containing error message */
     res.status(500).json({ error: "An error occurred while fetching data."});
   }
 };
 
+// export the getData function
 module.exports = { getData };
 
 // const data = {
